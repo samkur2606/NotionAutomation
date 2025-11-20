@@ -4,6 +4,7 @@ using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
+var appSettings = builder.Configuration.Get<AppSettings>() ?? throw new Exception("AppSettings missing");
 
 // Add services to the container.
 var hangfireConnection = builder.Configuration.GetConnectionString("Hangfire");
@@ -13,6 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton(appSettings);
 builder.Services.AddTransient<TestJob>();
 
 var app = builder.Build();
