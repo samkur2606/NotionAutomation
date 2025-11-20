@@ -1,6 +1,7 @@
 using Hangfire;
 using Hangfire.Storage.SQLite;
 using NotionAutomation.Api.Helpers;
+using NotionAutomation.Api.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<TestJob>();
 
 var app = builder.Build();
 
@@ -21,7 +23,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHangfireUiInEnglish();
 app.UseHangfireDashboard();
+app.RegisterRecurringJobs();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
