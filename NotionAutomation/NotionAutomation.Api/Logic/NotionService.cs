@@ -48,6 +48,7 @@ public class NotionService
         {
             var title = GetNotionPageName(result);
             var date = GetNotionPageDate(result, "MyDate");
+            var created = GetNotionPageCreatedTime(result);
 
             pages.Add(new NotionPage
             {
@@ -60,10 +61,16 @@ public class NotionService
         }
     }
 
+    private DateTimeOffset GetNotionPageCreatedTime(IWikiDatabase wikiDatabase)
+    {
+        var page = GetPageOrThrowException(wikiDatabase);
+        return page.CreatedTime;
+    }
+
+
     private string GetNotionPageName(IWikiDatabase wikiDatabase)
     {
-        if (wikiDatabase is not Page page) throw new ArgumentNullException(nameof(page));
-
+        var page = GetPageOrThrowException(wikiDatabase);
         if (page.Properties["Name"] is TitlePropertyValue titlePropertyValue) 
             return titlePropertyValue.Title.FirstOrDefault()?.PlainText ?? string.Empty;
 
@@ -72,12 +79,18 @@ public class NotionService
 
     private DateTimeOffset? GetNotionPageDate(IWikiDatabase wikiDatabase, string propertyName)
     {
-        if (wikiDatabase is not Page page)
-            return null;
-
+        var page = GetPageOrThrowException(wikiDatabase);
         if (page.Properties[propertyName] is DatePropertyValue { Date: not null } datePropertyValue)
             return datePropertyValue.Date.Start;
 
         return null;
     }
+
+    private Page GetPageOrThrowException(IWikiDatabase wikiDatabase)
+    {
+        if (wikiDatabase is not Page page)
+            throw new ArgumentException("The provided object is not a Page.", nameof(wikiDatabase));
+        return page;
+    }
+
 }
