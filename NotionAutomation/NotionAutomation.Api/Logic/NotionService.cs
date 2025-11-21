@@ -2,6 +2,7 @@
 using System.Text;
 using Notion.Client;
 using NotionAutomation.Api.Models;
+using static SQLite.SQLite3;
 using Page = Notion.Client.Page;
 
 namespace NotionAutomation.Api.Logic;
@@ -23,7 +24,7 @@ public class NotionService
     private AppSettings AppSettings { get; }
     private HttpClient HttpClient { get; }
 
-    public async Task<string> GetAllRowsRaw(string databaseName)
+    public async Task<string> GetAllRowsRawAsync(string databaseName)
     {
         var notionDatabase = AppSettings.Notion.Databases.FirstOrDefault(d => d.Name == databaseName);
         if (notionDatabase == null) throw new ArgumentException($"Database '{databaseName}' not found.");
@@ -36,31 +37,94 @@ public class NotionService
         return jsonString;
     }
 
+    public async Task<List<NotionPage>> GetNotionPagesAsync(string databaseName, int pageSize)
+    {
+        var notionDatabase = AppSettings.Notion.Databases.FirstOrDefault(d => d.Name == databaseName);
+        if (notionDatabase == null) throw new ArgumentException($"Database '{databaseName}' not found.");
+        var response = await NotionClient.Databases.QueryAsync(notionDatabase.Id, new DatabasesQueryParameters { PageSize = pageSize });
+        var result = response.Results
+            .Select(MapToNotionPage)
+            .ToList();
+        return result;
+    }
+
+    public NotionPage MapToNotionPage(IWikiDatabase wikiDatabase)
+    {
+        var title = GetNotionPageName(wikiDatabase);
+        var date = GetNotionPageDate(wikiDatabase, "MyDate");
+        var created = GetNotionPageCreatedTime(wikiDatabase);
+        var select = GetNotionPageSelect(wikiDatabase, "MySelect");
+        var description = GetNotionPageRichText(wikiDatabase, "MyDescription");
+        var id = GetNotionPageId(wikiDatabase);
+
+        var notionPage = new NotionPage
+        {
+            Id = id,
+            Name = title,
+            Date = date,
+            Select = select,
+            Created = created,
+            Description = description
+        };
+
+        return notionPage;
+    }
+
     public async Task TestCall()
     {
-        var response = await NotionClient.Databases.QueryAsync(AppSettings.Notion.Databases.First().Id, new DatabasesQueryParameters { PageSize = 100 });
+        var databaseName = AppSettings.Notion.Databases.First().Name;
+        var pages = await GetNotionPagesAsync(databaseName, 1);
+        var firstPage = pages[0];
+        var createdDate = firstPage.Created;
 
-        //var jsonFormat = await GetAllRowsRaw(AppSettings.Notion.Databases.First().Name);
+        if (createdDate is null) throw new ArgumentNullException(nameof(createdDate));
 
-        // ReSharper disable once CollectionNeverQueried.Local
-        var pages = new List<NotionPage>();
-        foreach (var result in response.Results)
+        var selectValue = createdDate.Value switch
         {
-            var title = GetNotionPageName(result);
-            var date = GetNotionPageDate(result, "MyDate");
-            var created = GetNotionPageCreatedTime(result);
-            var select = GetNotionPageSelect(result, "MySelect");
-            var description = GetNotionPageRichText(result, "MyDescription");
+            { Day: 30, Month: 11 } => "Test30",
+            { Day: 11, Month: 11 } => "Test11",
+            _ => "Test1"
+        };
 
-            pages.Add(new NotionPage
+        var notionProperties = new Dictionary<string, PropertyValue>();
+        var properties = new Dictionary<string, object>
+        {
+            ["MySelect"] = new SelectOption { Name = "Test30" },
+            ["MyDate"] = DateTimeOffset.Now
+        };
+
+        foreach (var kvp in properties)
+        {
+            var propertyName = kvp.Key;
+            var propertyValue = kvp.Value;
+            switch (propertyValue)
             {
-                Name = title,
-                Date = date,
-                Select = select,
-                Created = created,
-                Description = description
-            });
+                case SelectOption selectOption:
+                    notionProperties[propertyName] = new SelectPropertyValue { Select = selectOption };
+                    break;
+                case DateTimeOffset dateTimeOffset:
+                    notionProperties[propertyName] = new DatePropertyValue { Date = new Date { Start = dateTimeOffset } };
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported type for '{propertyName}'.");
+            }
         }
+
+        var updatedPage = await NotionClient.Pages.UpdateAsync(firstPage.Id.ToString(), new PagesUpdateParameters
+        {
+            Properties = notionProperties
+        });
+
+        if (updatedPage is null) throw new Exception("Update failed: Notion returned null.");
+
+        var notionPage = MapToNotionPage(updatedPage);
+    }
+
+    private Guid GetNotionPageId(IWikiDatabase wikiDatabase)
+    {
+        var page = GetPageOrThrowException(wikiDatabase);
+        var id = Guid.Parse(page.Id);
+        return id;
     }
 
     private string GetNotionPageRichText(IWikiDatabase wikiDatabase, string propertyName)
