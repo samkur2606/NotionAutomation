@@ -1,4 +1,4 @@
-﻿namespace NotionAutomation.Api.Helpers;
+﻿namespace NotionAutomation.Api.Models;
 
 public class AppSettings
 {

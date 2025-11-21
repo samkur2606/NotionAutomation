@@ -2,6 +2,8 @@ using Hangfire;
 using Hangfire.Storage.SQLite;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Jobs;
+using NotionAutomation.Api.Logic;
+using NotionAutomation.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var appSettings = builder.Configuration.Get<AppSettings>() ?? throw new Exception("AppSettings missing");
@@ -15,9 +17,15 @@ builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(appSettings);
+builder.Services.AddSingleton<NotionService>();
 builder.Services.AddTransient<TestJob>();
 
 var app = builder.Build();
+
+// TEMP
+var notionService = app.Services.GetRequiredService<NotionService>();
+await notionService.TestCall();
+//
 
 if (app.Environment.IsDevelopment())
 {
