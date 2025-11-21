@@ -1,5 +1,6 @@
 using Hangfire;
 using Hangfire.Storage.SQLite;
+using Notion.Client;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Logic;
@@ -28,6 +29,7 @@ builder.Services.AddTransient<NotionDatabaseService>();
 builder.Services.AddTransient<NotionPageService>();
 builder.Services.AddTransient<NotionRawApiService>();
 builder.Services.AddHttpClient();
+builder.Services.AddCustomNotionClient();
 
 var app = builder.Build();
 
