@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using Notion.Client;
 using NotionAutomation.Api.Models;
 using Page = Notion.Client.Page;
@@ -43,6 +42,7 @@ public class NotionService
 
         //var jsonFormat = await GetAllRowsRaw(AppSettings.Notion.Databases.First().Name);
 
+        // ReSharper disable once CollectionNeverQueried.Local
         var pages = new List<NotionPage>();
         foreach (var result in response.Results)
         {
@@ -50,26 +50,34 @@ public class NotionService
             var date = GetNotionPageDate(result, "MyDate");
             var created = GetNotionPageCreatedTime(result);
             var select = GetNotionPageSelect(result, "MySelect");
+            var description = GetNotionPageRichText(result, "MyDescription");
 
             pages.Add(new NotionPage
             {
                 Name = title,
                 Date = date,
-                Select = null,
+                Select = select,
                 Created = created,
-                Description = null
+                Description = description
             });
         }
+    }
+
+    private string GetNotionPageRichText(IWikiDatabase wikiDatabase, string propertyName)
+    {
+        var page = GetPageOrThrowException(wikiDatabase);
+
+        if (page.Properties[propertyName] is RichTextPropertyValue { RichText: not null } richTextPropertyValue)
+            return string.Join(" ", richTextPropertyValue.RichText.Select(rt => rt.PlainText));
+
+        return string.Empty;
     }
 
     private string GetNotionPageSelect(IWikiDatabase wikiDatabase, string propertyName)
     {
         var page = GetPageOrThrowException(wikiDatabase);
 
-        if (page.Properties[propertyName] is SelectPropertyValue { Select: not null } selectPropertyValue)
-        {
-            return selectPropertyValue.Select.Name;
-        }
+        if (page.Properties[propertyName] is SelectPropertyValue { Select: not null } selectPropertyValue) return selectPropertyValue.Select.Name;
 
         return string.Empty;
     }
@@ -80,11 +88,10 @@ public class NotionService
         return page.CreatedTime;
     }
 
-
     private string GetNotionPageName(IWikiDatabase wikiDatabase)
     {
         var page = GetPageOrThrowException(wikiDatabase);
-        if (page.Properties["Name"] is TitlePropertyValue titlePropertyValue) 
+        if (page.Properties["Name"] is TitlePropertyValue titlePropertyValue)
             return titlePropertyValue.Title.FirstOrDefault()?.PlainText ?? string.Empty;
 
         return string.Empty;
@@ -105,5 +112,4 @@ public class NotionService
             throw new ArgumentException("The provided object is not a Page.", nameof(wikiDatabase));
         return page;
     }
-
 }
