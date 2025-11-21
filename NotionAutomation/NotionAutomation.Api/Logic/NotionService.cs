@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Notion.Client;
 using NotionAutomation.Api.Models;
 using static SQLite.SQLite3;
@@ -74,50 +75,42 @@ public class NotionService
     {
         var databaseName = AppSettings.Notion.Databases.First().Name;
         var pages = await GetNotionPagesAsync(databaseName, 1);
-        var firstPage = pages[0];
-        var createdDate = firstPage.Created;
+        var page = pages[0];
 
-        if (createdDate is null) throw new ArgumentNullException(nameof(createdDate));
-
-        var selectValue = createdDate.Value switch
-        {
-            { Day: 30, Month: 11 } => "Test30",
-            { Day: 11, Month: 11 } => "Test11",
-            _ => "Test1"
-        };
-
-        var notionProperties = new Dictionary<string, PropertyValue>();
         var properties = new Dictionary<string, object>
         {
-            ["MySelect"] = new SelectOption { Name = "Test30" },
+            ["MySelect"] = new SelectOption { Name = "Test2" },
             ["MyDate"] = DateTimeOffset.Now
         };
 
-        foreach (var kvp in properties)
+        var pagesUpdateParameters = CreatePagesUpdateParameters(properties);
+        var updatedPage = await UpdateNotionPageAsync(page.Id, pagesUpdateParameters);
+    }
+
+    public async Task<NotionPage> UpdateNotionPageAsync(Guid notionPageId, PagesUpdateParameters parameters)
+    {
+        var updatedPage = await NotionClient.Pages.UpdateAsync(notionPageId.ToString(), parameters);
+        if (updatedPage is null) throw new Exception("Update failed: Notion returned null.");
+        var notionPage = MapToNotionPage(updatedPage);
+        return notionPage;
+    }
+
+    private static PagesUpdateParameters CreatePagesUpdateParameters(Dictionary<string, object> properties)
+    {
+
+        var notionProperties = new Dictionary<string, PropertyValue>();
+        foreach (var (propertyName, propertyValue) in properties)
         {
-            var propertyName = kvp.Key;
-            var propertyValue = kvp.Value;
-            switch (propertyValue)
+            notionProperties[propertyName] = propertyValue switch
             {
-                case SelectOption selectOption:
-                    notionProperties[propertyName] = new SelectPropertyValue { Select = selectOption };
-                    break;
-                case DateTimeOffset dateTimeOffset:
-                    notionProperties[propertyName] = new DatePropertyValue { Date = new Date { Start = dateTimeOffset } };
-                    break;
-                default:
-                    throw new ArgumentException($"Unsupported type for '{propertyName}'.");
-            }
+                SelectOption selectOption => new SelectPropertyValue { Select = selectOption },
+                DateTimeOffset dateTimeOffset => new DatePropertyValue { Date = new Date { Start = dateTimeOffset } },
+                _ => throw new ArgumentException($"Unsupported type for '{propertyName}'.")
+            };
         }
 
-        var updatedPage = await NotionClient.Pages.UpdateAsync(firstPage.Id.ToString(), new PagesUpdateParameters
-        {
-            Properties = notionProperties
-        });
-
-        if (updatedPage is null) throw new Exception("Update failed: Notion returned null.");
-
-        var notionPage = MapToNotionPage(updatedPage);
+        var pagesUpdateParameters = new PagesUpdateParameters { Properties = notionProperties };
+        return pagesUpdateParameters;
     }
 
     private Guid GetNotionPageId(IWikiDatabase wikiDatabase)
