@@ -49,6 +49,7 @@ public class NotionService
             var title = GetNotionPageName(result);
             var date = GetNotionPageDate(result, "MyDate");
             var created = GetNotionPageCreatedTime(result);
+            var select = GetNotionPageSelect(result, "MySelect");
 
             pages.Add(new NotionPage
             {
@@ -59,6 +60,18 @@ public class NotionService
                 Description = null
             });
         }
+    }
+
+    private string GetNotionPageSelect(IWikiDatabase wikiDatabase, string propertyName)
+    {
+        var page = GetPageOrThrowException(wikiDatabase);
+
+        if (page.Properties[propertyName] is SelectPropertyValue { Select: not null } selectPropertyValue)
+        {
+            return selectPropertyValue.Select.Name;
+        }
+
+        return string.Empty;
     }
 
     private DateTimeOffset GetNotionPageCreatedTime(IWikiDatabase wikiDatabase)
