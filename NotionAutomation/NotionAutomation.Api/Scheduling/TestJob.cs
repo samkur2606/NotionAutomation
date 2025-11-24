@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace NotionAutomation.Api.Jobs;
+namespace NotionAutomation.Api.Scheduling;
 
 public class TestJob
 {

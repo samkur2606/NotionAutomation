@@ -1,5 +1,4 @@
 ﻿using Hangfire;
-using NotionAutomation.Api.Jobs;
 
 namespace NotionAutomation.Api.Scheduling;
 
