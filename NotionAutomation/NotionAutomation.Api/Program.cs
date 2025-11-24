@@ -2,7 +2,6 @@ using Hangfire;
 using Hangfire.Storage.SQLite;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
-using NotionAutomation.Api.Logic;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Scheduling;
 using NotionAutomation.Api.Services;
@@ -19,10 +18,10 @@ builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(appSettings);
-builder.Services.AddSingleton<NotionTest>();
+builder.Services.AddSingleton<ConfigurationHelper>();
 builder.Services.AddTransient<TestJob>();
 builder.Services.AddTransient<NotionPropertyParser>();
-builder.Services.AddTransient<NotionPageMapper>();
+builder.Services.AddTransient<NotionMapper>();
 builder.Services.AddTransient<NotionPageUpdateBuilder>();
 builder.Services.AddTransient<NotionDatabaseService>();
 builder.Services.AddTransient<NotionPageService>();
@@ -33,8 +32,8 @@ builder.Services.AddCustomNotionClient();
 var app = builder.Build();
 
 // TEMP
-var notionService = app.Services.GetRequiredService<NotionTest>();
-await notionService.TestCall();
+var test = app.Services.GetRequiredService<NotionDatabaseService>();
+await test.GetTodayHolidaysAsync(DateTime.Today);
 //
 
 if (app.Environment.IsDevelopment())

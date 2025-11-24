@@ -1,12 +1,15 @@
 ﻿using Notion.Client;
 using NotionAutomation.Api.Converters;
+using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Services;
 
-public class NotionDatabaseService(INotionClient notionClient)
+public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelper configurationHelper, NotionMapper notionMapper)
 {
-    public INotionClient NotionClient { get; } = notionClient;
+    private INotionClient NotionClient { get; } = notionClient;
+    private ConfigurationHelper ConfigurationHelper { get; } = configurationHelper;
+    private NotionMapper NotionMapper { get; } = notionMapper;
 
     public async Task<List<IWikiDatabase>> QueryDatabaseAsync(string notionDatabaseId, int pageSize)
     {
@@ -14,32 +17,19 @@ public class NotionDatabaseService(INotionClient notionClient)
         return result.Results;
     }
 
-    //public async Task<IEnumerable<Holiday>> GetTodayHolidaysAsync()
-    //{
-    //    var today = DateTime.Today;
-    //    var query = new DatabasesQueryParameters
-    //    {
-    //        Filter = new FilterObject
-    //        {
-    //            Property = "Date",
-    //            Date = new DateFilter { Equals = today }
-    //        }
-    //    };
+    public async Task<Holiday?> GetTodayHolidaysAsync(DateTime dateTime)
+    {
+        var dateFilter = new DateFilter("Date", dateTime);
+        var queryParameters = new DatabasesQueryParameters { Filter = dateFilter };
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionDatabaseNames.Holidays);
 
-    //    var result = await NotionClient.Databases.QueryAsync("HOLIDAYS_DATABASE_ID", query);
-    //    var parser = new NotionPropertyParser();
+        var response = await NotionClient.Databases.QueryAsync(databaseId, queryParameters);
 
-    //    var finalResult = result.Results.Select(page => new Holiday
-    //    {
-    //        Name = parser.GetNotionPageName(page),
-    //        Date = parser.GetNotionPageDate(page, "Date")?.Date ?? DateTime.MinValue,
-    //        IsBusinessDay = page.Properties.ContainsKey("Formula Is Business Day")
-    //                        && page.Properties["Formula Is Business Day"] is CheckboxPropertyValue cb
-    //            ? cb.Checkbox
-    //            : false
-    //    });
+        var wikiDatabase = response.Results.FirstOrDefault();
+        if (wikiDatabase is null)
+            return null;
 
-    //    return finalResult;
-    //}
-
+        var holiday = NotionMapper.MapToHoliday(wikiDatabase);
+        return holiday;
+    }
 }
