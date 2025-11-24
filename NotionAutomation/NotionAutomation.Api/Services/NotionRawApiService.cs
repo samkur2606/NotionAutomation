@@ -1,14 +1,11 @@
-﻿using NotionAutomation.Api.Models;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
+using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Services;
 
 public class NotionRawApiService
 {
-    public HttpClient HttpClient { get; }
-    public AppSettings AppSettings { get; }
-
     public NotionRawApiService(HttpClient httpClient, AppSettings settings)
     {
         HttpClient = httpClient;
@@ -16,6 +13,9 @@ public class NotionRawApiService
         HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AppSettings.Notion.IntegrationToken);
         HttpClient.DefaultRequestHeaders.Add("Notion-Version", AppSettings.Notion.ApiVersion);
     }
+
+    public HttpClient HttpClient { get; }
+    public AppSettings AppSettings { get; }
 
     public async Task<string> QueryDatabaseRawAsync(string notionDatabaseId)
     {

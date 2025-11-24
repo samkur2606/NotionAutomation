@@ -1,5 +1,4 @@
 ﻿using Notion.Client;
-using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Services;
 
