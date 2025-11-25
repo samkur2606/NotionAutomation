@@ -39,14 +39,16 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         return holiday;
     }
 
-    //public async Task<Page?> GetTimesheetByDateAsync(DateTime date)
-    //{
-    //    var dateFilter = new DateFilter("Date", date);
-    //    var query = new DatabasesQueryParameters { Filter = dateFilter };
+    public async Task<TimeSheet?> GetTimesheetByDateAsync(DateTime dateTime)
+    {
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.TimeSheets.DatabaseName);
+        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.TimeSheets.Properties.DateName);
 
-    //    var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.Timesheets);
-    //    var response = await _notionClient.Databases.QueryAsync(databaseId, query);
+        var wikiDatabase = response.Results.FirstOrDefault();
+        if (wikiDatabase is null)
+            return null;
 
-    //    return response.Results.FirstOrDefault();
-    //}
+        var timeSheet = NotionMapper.MapToTimeSheet(wikiDatabase);
+        return timeSheet;
+    }
 }

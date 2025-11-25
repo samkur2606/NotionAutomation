@@ -1,4 +1,5 @@
-﻿using Notion.Client;
+﻿using System.ComponentModel;
+using Notion.Client;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Scheduling;
 
@@ -28,5 +29,15 @@ public static class ExtensionMethods
         });
 
         return services;
+    }
+
+    public static string GetDescription(this Enum value)
+    {
+        var type = value.GetType();
+        var memberInfo = type.GetMember(value.ToString());
+        if (memberInfo.Length <= 0) return value.ToString();
+        var attrs = memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
+        var description = attrs.Length > 0 ? ((DescriptionAttribute)attrs[0]).Description : value.ToString();
+        return description;
     }
 }

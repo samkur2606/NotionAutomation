@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(appSettings);
 builder.Services.AddSingleton<ConfigurationHelper>();
 builder.Services.AddTransient<TestJob>();
-builder.Services.AddTransient<NotionPropertyParser>();
+builder.Services.AddTransient<NotionPagePropertyParser>();
 builder.Services.AddTransient<NotionMapper>();
 builder.Services.AddTransient<NotionPageUpdateBuilder>();
 builder.Services.AddTransient<NotionDatabaseService>();
@@ -34,6 +34,7 @@ var app = builder.Build();
 // TEMP
 var test = app.Services.GetRequiredService<NotionDatabaseService>();
 await test.GetHolidaysByDateAsync(new DateTime(2025, 12, 26));
+await test.GetTimesheetByDateAsync(new DateTime(2025, 11, 25));
 //
 
 if (app.Environment.IsDevelopment())

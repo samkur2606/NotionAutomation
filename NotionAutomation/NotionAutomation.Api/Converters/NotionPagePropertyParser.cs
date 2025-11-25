@@ -2,18 +2,18 @@
 
 namespace NotionAutomation.Api.Converters;
 
-public class NotionPropertyParser
+public class NotionPagePropertyParser
 {
     private const string NameProperty = "Name";
 
-    public Guid GetNotionPageId(IWikiDatabase wikiDatabase)
+    public string GetPageId(IWikiDatabase wikiDatabase)
     {
         var page = GetPageOrThrowException(wikiDatabase);
-        var id = Guid.Parse(page.Id);
+        var id = page.Id; 
         return id;
     }
 
-    public string GetNotionPageRichText(IWikiDatabase wikiDatabase, string propertyName)
+    public string GetRichText(IWikiDatabase wikiDatabase, string propertyName)
     {
         var page = GetPageOrThrowException(wikiDatabase);
 
@@ -23,7 +23,7 @@ public class NotionPropertyParser
         return string.Empty;
     }
 
-    public string GetNotionPageSelect(IWikiDatabase wikiDatabase, string propertyName)
+    public string GetSelect(IWikiDatabase wikiDatabase, string propertyName)
     {
         var page = GetPageOrThrowException(wikiDatabase);
 
@@ -32,13 +32,13 @@ public class NotionPropertyParser
         return string.Empty;
     }
 
-    public DateTimeOffset GetNotionPageCreatedTime(IWikiDatabase wikiDatabase)
+    public DateTimeOffset GetCreatedTime(IWikiDatabase wikiDatabase)
     {
         var page = GetPageOrThrowException(wikiDatabase);
         return page.CreatedTime;
     }
 
-    public string GetNotionPageName(IWikiDatabase wikiDatabase)
+    public string GetName(IWikiDatabase wikiDatabase)
     {
         var page = GetPageOrThrowException(wikiDatabase);
         if (page.Properties[NameProperty] is TitlePropertyValue titlePropertyValue)
@@ -47,7 +47,7 @@ public class NotionPropertyParser
         return string.Empty;
     }
 
-    public DateTimeOffset? GetNotionPageDate(IWikiDatabase wikiDatabase, string propertyName)
+    public DateTimeOffset? GetDate(IWikiDatabase wikiDatabase, string propertyName)
     {
         var page = GetPageOrThrowException(wikiDatabase);
         if (page.Properties[propertyName] is DatePropertyValue { Date: not null } datePropertyValue)
