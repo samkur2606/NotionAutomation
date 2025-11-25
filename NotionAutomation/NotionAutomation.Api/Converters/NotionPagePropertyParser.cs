@@ -6,10 +6,10 @@ public class NotionPagePropertyParser
 {
     private const string NameProperty = "Name";
 
-    public string GetPageId(IWikiDatabase wikiDatabase)
+    public Guid GetPageId(IWikiDatabase wikiDatabase)
     {
         var page = GetPageOrThrowException(wikiDatabase);
-        var id = page.Id; 
+        var id = Guid.Parse(page.Id);
         return id;
     }
 

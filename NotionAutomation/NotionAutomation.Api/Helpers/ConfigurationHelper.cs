@@ -6,7 +6,7 @@ public class ConfigurationHelper(AppSettings appSettings)
 {
     private AppSettings AppSettings { get; } = appSettings;
 
-    public string GetDatabaseId(string name)
+    public Guid GetDatabaseId(string name)
     {
         var databases = AppSettings.Notion.Databases.ToDictionary(d => d.Name, d => d.Id);
 

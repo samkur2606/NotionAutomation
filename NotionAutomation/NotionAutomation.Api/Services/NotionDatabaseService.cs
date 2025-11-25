@@ -12,17 +12,17 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
     private ConfigurationHelper ConfigurationHelper { get; } = configurationHelper;
     private NotionMapper NotionMapper { get; } = notionMapper;
 
-    public async Task<List<IWikiDatabase>> QueryDatabaseAsync(string notionDatabaseId, int pageSize)
+    public async Task<List<IWikiDatabase>> QueryDatabaseAsync(Guid notionDatabaseId, int pageSize)
     {
-        var result = await NotionClient.Databases.QueryAsync(notionDatabaseId, new DatabasesQueryParameters { PageSize = pageSize });
+        var result = await NotionClient.Databases.QueryAsync(notionDatabaseId.ToString(), new DatabasesQueryParameters { PageSize = pageSize });
         return result.Results;
     }
 
-    public async Task<DatabaseQueryResponse> GetDataByDateAsync(string databaseId, DateTime dateTime, string notionDatePropertyName)
+    public async Task<DatabaseQueryResponse> GetDataByDateAsync(Guid databaseId, DateTime dateTime, string notionDatePropertyName)
     {
         var dateFilter = new DateFilter(notionDatePropertyName, dateTime);
         var query = new DatabasesQueryParameters { Filter = dateFilter };
-        var response = await NotionClient.Databases.QueryAsync(databaseId, query);
+        var response = await NotionClient.Databases.QueryAsync(databaseId.ToString(), query);
         return response;
     }
 
