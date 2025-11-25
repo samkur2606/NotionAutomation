@@ -34,7 +34,7 @@ public class NotionMapper(NotionPropertyParser notionPropertyParser)
         var holiday = new Holiday
         {
             Name = NotionPropertyParser.GetNotionPageName(wikiDatabase),
-            Date = NotionPropertyParser.GetNotionPageDate(wikiDatabase, "Date")
+            Date = NotionPropertyParser.GetNotionPageDate(wikiDatabase, NotionSchema.Holidays.Properties.DateName)
         };
 
         return holiday;

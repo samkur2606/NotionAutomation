@@ -33,7 +33,7 @@ var app = builder.Build();
 
 // TEMP
 var test = app.Services.GetRequiredService<NotionDatabaseService>();
-await test.GetTodayHolidaysAsync(DateTime.Today);
+await test.GetHolidaysByDateAsync(new DateTime(2025, 12, 26));
 //
 
 if (app.Environment.IsDevelopment())

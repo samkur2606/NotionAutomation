@@ -2,6 +2,7 @@
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Models;
+using NotionSchema = NotionAutomation.Api.Models.NotionSchema;
 
 namespace NotionAutomation.Api.Services;
 
@@ -17,13 +18,18 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         return result.Results;
     }
 
-    public async Task<Holiday?> GetTodayHolidaysAsync(DateTime dateTime)
+    public async Task<DatabaseQueryResponse> GetDataByDateAsync(string databaseId, DateTime dateTime, string notionDatePropertyName)
     {
-        var dateFilter = new DateFilter("Date", dateTime);
-        var queryParameters = new DatabasesQueryParameters { Filter = dateFilter };
-        var databaseId = ConfigurationHelper.GetDatabaseId(NotionDatabaseNames.Holidays);
+        var dateFilter = new DateFilter(notionDatePropertyName, dateTime);
+        var query = new DatabasesQueryParameters { Filter = dateFilter };
+        var response = await NotionClient.Databases.QueryAsync(databaseId, query);
+        return response;
+    }
 
-        var response = await NotionClient.Databases.QueryAsync(databaseId, queryParameters);
+    public async Task<Holiday?> GetHolidaysByDateAsync(DateTime dateTime)
+    {
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.Holidays.DatabaseName);
+        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.Holidays.Properties.DateName);
 
         var wikiDatabase = response.Results.FirstOrDefault();
         if (wikiDatabase is null)
@@ -32,4 +38,15 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         var holiday = NotionMapper.MapToHoliday(wikiDatabase);
         return holiday;
     }
+
+    //public async Task<Page?> GetTimesheetByDateAsync(DateTime date)
+    //{
+    //    var dateFilter = new DateFilter("Date", date);
+    //    var query = new DatabasesQueryParameters { Filter = dateFilter };
+
+    //    var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.Timesheets);
+    //    var response = await _notionClient.Databases.QueryAsync(databaseId, query);
+
+    //    return response.Results.FirstOrDefault();
+    //}
 }

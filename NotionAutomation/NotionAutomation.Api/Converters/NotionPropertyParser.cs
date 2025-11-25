@@ -4,6 +4,8 @@ namespace NotionAutomation.Api.Converters;
 
 public class NotionPropertyParser
 {
+    private const string NameProperty = "Name";
+
     public Guid GetNotionPageId(IWikiDatabase wikiDatabase)
     {
         var page = GetPageOrThrowException(wikiDatabase);
@@ -39,7 +41,7 @@ public class NotionPropertyParser
     public string GetNotionPageName(IWikiDatabase wikiDatabase)
     {
         var page = GetPageOrThrowException(wikiDatabase);
-        if (page.Properties["Name"] is TitlePropertyValue titlePropertyValue)
+        if (page.Properties[NameProperty] is TitlePropertyValue titlePropertyValue)
             return titlePropertyValue.Title.FirstOrDefault()?.PlainText ?? string.Empty;
 
         return string.Empty;
