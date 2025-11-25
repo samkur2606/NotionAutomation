@@ -10,7 +10,7 @@ public static partial class NotionSchema
         {
             public const string PageId = "PageId";
             public const string DateName = "Date";
-            public const string Type = "Type";
+            public const string TypeName = "Type";
         }
     }
 }

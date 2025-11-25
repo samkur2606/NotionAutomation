@@ -2,6 +2,7 @@ using Hangfire;
 using Hangfire.Storage.SQLite;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
+using NotionAutomation.Api.Logic;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Scheduling;
 using NotionAutomation.Api.Services;
@@ -26,15 +27,15 @@ builder.Services.AddTransient<NotionPageUpdateBuilder>();
 builder.Services.AddTransient<NotionDatabaseService>();
 builder.Services.AddTransient<NotionPageService>();
 builder.Services.AddTransient<NotionRawApiService>();
+builder.Services.AddTransient<TimeSheetManager>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
 
 var app = builder.Build();
 
 // TEMP
-var test = app.Services.GetRequiredService<NotionDatabaseService>();
-await test.GetHolidaysByDateAsync(new DateTime(2025, 12, 26));
-await test.GetTimesheetByDateAsync(new DateTime(2025, 11, 25));
+var test = app.Services.GetRequiredService<TimeSheetManager>();
+await test.UpdateTimesheetForTodayHolidayAsync();
 //
 
 if (app.Environment.IsDevelopment())

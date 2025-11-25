@@ -20,7 +20,7 @@ public class NotionMapper(NotionPagePropertyParser notionPagePropertyParser)
 
     public TimeSheet MapToTimeSheet(IWikiDatabase wikiDatabase)
     {
-        var typeAsString = NotionPagePropertyParser.GetSelect(wikiDatabase, NotionSchema.TimeSheets.Properties.Type);
+        var typeAsString = NotionPagePropertyParser.GetSelect(wikiDatabase, NotionSchema.TimeSheets.Properties.TypeName);
         var type = ParseEnum<TimeSheetType>(typeAsString);
 
         var timeSheet = new TimeSheet
