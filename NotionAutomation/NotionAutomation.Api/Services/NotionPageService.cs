@@ -9,9 +9,9 @@ public class NotionPageService(INotionClient notionClient, NotionPageUpdateBuild
     private INotionClient NotionClient { get; } = notionClient;
     private NotionPageUpdateBuilder NotionPageUpdateBuilder { get; } = notionPageUpdateBuilder;
 
-    public async Task<Page> UpdateTimesheetTypePropertyAsync(TimeSheet timesheet, TimeSheetType updateSheetType)
+    public async Task<Page> UpdateTimesheetTypePropertyAsync(TimeSheet timesheet, TimeSheetType updateTimeSheetType)
     {
-        var property = NotionPageUpdateBuilder.CreateNotionPropertyUpdate(NotionSchema.TimeSheets.Properties.TypeName, updateSheetType);
+        var property = NotionPageUpdateBuilder.CreateNotionPropertyUpdate(NotionNames.TimeSheets.Properties.Type, updateTimeSheetType);
         var updateParams = NotionPageUpdateBuilder.CreatePagesUpdateParameters(property);
         var updatedPage = await NotionClient.Pages.UpdateAsync(timesheet.PageId.ToString(), updateParams);
         return updatedPage;

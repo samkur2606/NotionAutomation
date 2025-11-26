@@ -13,7 +13,7 @@ public class RawDataController(NotionRawApiService notionRawApiService) : Contro
     [HttpGet(Name = "GetRawData")]
     public async Task<string> Get(string databaseId)
     {
-        var rawData = await NotionRawApiService.QueryDatabaseRawAsync(databaseId);
+        var rawData = await NotionRawApiService.GetDatabaseAsync(databaseId);
         var prettyJsonRawData = JsonHelper.PrettyJson(rawData);
         return prettyJsonRawData;
     }

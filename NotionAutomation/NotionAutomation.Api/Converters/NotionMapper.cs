@@ -3,16 +3,16 @@ using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Converters;
 
-public class NotionMapper(NotionPagePropertyParser notionPagePropertyParser)
+public class NotionMapper(NotionParser notionParser)
 {
-    public NotionPagePropertyParser NotionPagePropertyParser { get; } = notionPagePropertyParser;
+    public NotionParser NotionParser { get; } = notionParser;
 
     public Holiday MapToHoliday(IWikiDatabase wikiDatabase)
     {
         var holiday = new Holiday
         {
-            Name = NotionPagePropertyParser.GetName(wikiDatabase),
-            Date = NotionPagePropertyParser.GetDate(wikiDatabase, NotionSchema.Holidays.Properties.DateName)
+            Name = NotionParser.GetName(wikiDatabase),
+            Date = NotionParser.GetDate(wikiDatabase, NotionNames.Holidays.Properties.Date)
         };
 
         return holiday;
@@ -20,13 +20,13 @@ public class NotionMapper(NotionPagePropertyParser notionPagePropertyParser)
 
     public TimeSheet MapToTimeSheet(IWikiDatabase wikiDatabase)
     {
-        var typeAsString = NotionPagePropertyParser.GetSelect(wikiDatabase, NotionSchema.TimeSheets.Properties.TypeName);
+        var typeAsString = NotionParser.GetSelect(wikiDatabase, NotionNames.TimeSheets.Properties.Type);
         var type = ParseEnum<TimeSheetType>(typeAsString);
 
         var timeSheet = new TimeSheet
         {
-            PageId = NotionPagePropertyParser.GetPageId(wikiDatabase),
-            Date = NotionPagePropertyParser.GetDate(wikiDatabase, NotionSchema.Holidays.Properties.DateName),
+            PageId = NotionParser.GetPageId(wikiDatabase),
+            Date = NotionParser.GetDate(wikiDatabase, NotionNames.Holidays.Properties.Date),
             Type = type
         };
 
@@ -45,5 +45,4 @@ public class NotionMapper(NotionPagePropertyParser notionPagePropertyParser)
 
         return null;
     }
-
 }

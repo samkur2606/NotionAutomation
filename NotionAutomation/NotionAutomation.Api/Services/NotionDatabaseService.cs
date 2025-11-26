@@ -2,7 +2,6 @@
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Models;
-using NotionSchema = NotionAutomation.Api.Models.NotionSchema;
 
 namespace NotionAutomation.Api.Services;
 
@@ -14,8 +13,8 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
 
     public async Task<List<IWikiDatabase>> QueryDatabaseAsync(Guid notionDatabaseId, int pageSize)
     {
-        var result = await NotionClient.Databases.QueryAsync(notionDatabaseId.ToString(), new DatabasesQueryParameters { PageSize = pageSize });
-        return result.Results;
+        var response = await NotionClient.Databases.QueryAsync(notionDatabaseId.ToString(), new DatabasesQueryParameters { PageSize = pageSize });
+        return response.Results;
     }
 
     public async Task<DatabaseQueryResponse> GetDataByDateAsync(Guid databaseId, DateTime dateTime, string notionDatePropertyName)
@@ -26,23 +25,10 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         return response;
     }
 
-    public async Task<Holiday?> GetHolidaysByDateAsync(DateTime dateTime)
-    {
-        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.Holidays.DatabaseName);
-        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.Holidays.Properties.DateName);
-
-        var wikiDatabase = response.Results.FirstOrDefault();
-        if (wikiDatabase is null)
-            return null;
-
-        var holiday = NotionMapper.MapToHoliday(wikiDatabase);
-        return holiday;
-    }
-
     public async Task<TimeSheet?> GetTimesheetByDateAsync(DateTime dateTime)
     {
-        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.TimeSheets.DatabaseName);
-        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.TimeSheets.Properties.DateName);
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.TimeSheets.Database);
+        var response = await GetDataByDateAsync(databaseId, dateTime, NotionNames.TimeSheets.Properties.Date);
 
         var wikiDatabase = response.Results.FirstOrDefault();
         if (wikiDatabase is null)
@@ -50,5 +36,18 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
 
         var timeSheet = NotionMapper.MapToTimeSheet(wikiDatabase);
         return timeSheet;
+    }
+
+    public async Task<Holiday?> GetHolidaysByDateAsync(DateTime dateTime)
+    {
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.Holidays.Database);
+        var response = await GetDataByDateAsync(databaseId, dateTime, NotionNames.Holidays.Properties.Date);
+
+        var wikiDatabase = response.Results.FirstOrDefault();
+        if (wikiDatabase is null)
+            return null;
+
+        var holiday = NotionMapper.MapToHoliday(wikiDatabase);
+        return holiday;
     }
 }

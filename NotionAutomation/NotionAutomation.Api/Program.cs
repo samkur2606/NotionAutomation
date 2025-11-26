@@ -21,13 +21,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(appSettings);
 builder.Services.AddSingleton<ConfigurationHelper>();
 builder.Services.AddTransient<TestJob>();
-builder.Services.AddTransient<NotionPagePropertyParser>();
+builder.Services.AddTransient<NotionParser>();
 builder.Services.AddTransient<NotionMapper>();
 builder.Services.AddTransient<NotionPageUpdateBuilder>();
 builder.Services.AddTransient<NotionDatabaseService>();
 builder.Services.AddTransient<NotionPageService>();
 builder.Services.AddTransient<NotionRawApiService>();
 builder.Services.AddTransient<TimeSheetManager>();
+builder.Services.AddTransient<NotionRawParser>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
 
@@ -35,7 +36,7 @@ var app = builder.Build();
 
 // TEMP
 var test = app.Services.GetRequiredService<TimeSheetManager>();
-await test.UpdateTimesheetForTodayHolidayAsync();
+await test.UpdateTimesheetForTodayVacationAsync();
 //
 
 if (app.Environment.IsDevelopment())
