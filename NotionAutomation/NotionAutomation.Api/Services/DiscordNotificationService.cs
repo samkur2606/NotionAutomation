@@ -1,11 +1,14 @@
-﻿using NotionAutomation.Api.Models;
+﻿using System.Diagnostics;
+using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Services;
 
-public class DiscordNotificationService(HttpClient httpClient, AppSettings appSettings) : INotificationService
+public class DiscordNotificationService(HttpClient httpClient, AppSettings appSettings, IHostEnvironment environment, ILogger<DiscordNotificationService> logger) : INotificationService
 {
     private HttpClient HttpClient { get; } = httpClient;
     private AppSettings AppSettings { get; } = appSettings;
+    private IHostEnvironment Environment { get; } = environment;
+    private ILogger<DiscordNotificationService> Logger { get; } = logger;
 
     public Task NotifySuccess(string message)
     {
@@ -24,6 +27,12 @@ public class DiscordNotificationService(HttpClient httpClient, AppSettings appSe
 
     private async Task Send(string content)
     {
+        if (Environment.IsDevelopment())
+        {
+            Logger.LogInformation($"[Development] Discord message skipped: {content}");
+            return;
+        }
+
         var webhookUrl = AppSettings.DiscordWebhookUrl;
         var response = await HttpClient.PostAsJsonAsync(webhookUrl, new { content });
 
