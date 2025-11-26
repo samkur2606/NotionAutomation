@@ -26,6 +26,19 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         return response;
     }
 
+    public async Task<TimeSheet?> GetTimesheetByDateAsync(DateTime dateTime)
+    {
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.TimeSheets.DatabaseName);
+        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.TimeSheets.Properties.DateName);
+
+        var wikiDatabase = response.Results.FirstOrDefault();
+        if (wikiDatabase is null)
+            return null;
+
+        var timeSheet = NotionMapper.MapToTimeSheet(wikiDatabase);
+        return timeSheet;
+    }
+
     public async Task<Holiday?> GetHolidaysByDateAsync(DateTime dateTime)
     {
         var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.Holidays.DatabaseName);
@@ -39,16 +52,8 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         return holiday;
     }
 
-    public async Task<TimeSheet?> GetTimesheetByDateAsync(DateTime dateTime)
+    public async Task<object> GetVacationsByDateAsync(DateTime vacationDay)
     {
-        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.TimeSheets.DatabaseName);
-        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.TimeSheets.Properties.DateName);
-
-        var wikiDatabase = response.Results.FirstOrDefault();
-        if (wikiDatabase is null)
-            return null;
-
-        var timeSheet = NotionMapper.MapToTimeSheet(wikiDatabase);
-        return timeSheet;
+        throw new NotImplementedException();
     }
 }

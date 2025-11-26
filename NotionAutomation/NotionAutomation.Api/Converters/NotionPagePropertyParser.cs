@@ -1,4 +1,5 @@
 ﻿using Notion.Client;
+using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Converters;
 
@@ -61,5 +62,25 @@ public class NotionPagePropertyParser
         if (wikiDatabase is not Page page)
             throw new ArgumentException("The provided object is not a Page.", nameof(wikiDatabase));
         return page;
+    }
+
+    public DateRange GetDateRange(IWikiDatabase wikiDatabase, string propertyName)
+    {
+        var page = GetPageOrThrowException(wikiDatabase);
+
+        if (page.Properties[propertyName] is not DatePropertyValue datePropertyValue || datePropertyValue.Date is null)
+            throw new InvalidOperationException($"Property '{propertyName}' does not exist or has no date value.");
+
+        if (datePropertyValue.Date.Start is null)
+            throw new InvalidOperationException($"Property '{propertyName}' must have a Start date.");
+
+        if (datePropertyValue.Date.End is null)
+            throw new InvalidOperationException($"Property '{propertyName}' must have a End date.");
+
+        var start = datePropertyValue.Date.Start.Value.DateTime;
+        var end = datePropertyValue.Date.End.Value.DateTime;
+
+        var dateRange = new DateRange(start, end);
+        return dateRange;
     }
 }

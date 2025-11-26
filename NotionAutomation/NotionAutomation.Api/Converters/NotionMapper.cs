@@ -45,5 +45,4 @@ public class NotionMapper(NotionPagePropertyParser notionPagePropertyParser)
 
         return null;
     }
-
 }
