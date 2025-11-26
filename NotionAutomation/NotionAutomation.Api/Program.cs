@@ -28,7 +28,6 @@ builder.Services.AddTransient<NotionDatabaseService>();
 builder.Services.AddTransient<NotionPageService>();
 builder.Services.AddTransient<NotionRawApiService>();
 builder.Services.AddTransient<TimeSheetManager>();
-builder.Services.AddTransient<VacationManager>();
 builder.Services.AddTransient<NotionRawParser>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
@@ -36,7 +35,7 @@ builder.Services.AddCustomNotionClient();
 var app = builder.Build();
 
 // TEMP
-var test = app.Services.GetRequiredService<VacationManager>();
+var test = app.Services.GetRequiredService<TimeSheetManager>();
 await test.UpdateTimesheetForTodayVacationAsync();
 //
 

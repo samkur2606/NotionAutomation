@@ -1,4 +1,5 @@
 ﻿using Notion.Client;
+using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Converters;
@@ -36,7 +37,7 @@ public class NotionPageUpdateBuilder
 
     private SelectPropertyValue CreateSelectPropertyValue(Enum value)
     {
-        var selectOption = new SelectOption { Name = value.ToString() };
+        var selectOption = new SelectOption { Name = value.GetDescription() };
         var selectProperty = new SelectPropertyValue { Select = selectOption };
         return selectProperty;
     }

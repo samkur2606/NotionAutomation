@@ -20,19 +20,22 @@ public class NotionRawParser
 
             var durationProperty = properties[NotionNames.Vacations.Properties.Duration]?["date"];
             
-            if (durationProperty is null) throw new Exception("text completing...");
+            if (durationProperty is null) throw new Exception($"Vacation {NotionNames.Vacations.Properties.Duration} property is missing.");
 
             var startDate = durationProperty["start"]?.ToObject<DateTime?>();
             var endDate = durationProperty["end"]?.ToObject<DateTime?>();
 
-            if (startDate is null) throw new Exception("text completing...");
-            if (endDate is null) throw new Exception("text completing...");
+            if (startDate is null) throw new Exception("Vacation 'Start Date' is missing or invalid."); ;
+            if (endDate is null) throw new Exception("Vacation 'End Date' is missing or invalid."); ;
 
             var duration = new DateRange { Start = startDate.Value, End = endDate.Value };
             var statusAsString = properties[NotionNames.Vacations.Properties.Status]?["select"]?["name"]?.ToString();
 
-            if (string.IsNullOrEmpty(statusAsString) || !Enum.TryParse<VacationStatus>(statusAsString, true, out var parsedStatus))
-                throw new Exception("text completing...");
+            if (string.IsNullOrEmpty(statusAsString))
+                throw new Exception($"Vacation '{NotionNames.Vacations.Properties.Status}' property is missing or empty.");
+
+            if (!Enum.TryParse<VacationStatus>(statusAsString, true, out var parsedStatus))
+                throw new Exception($"Vacation '{NotionNames.Vacations.Properties.Status}' value '{statusAsString}' is not a valid {nameof(VacationStatus)}.");
 
             vacations.Add(new Vacation
             {

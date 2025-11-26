@@ -59,9 +59,8 @@ public class NotionRawApiService
 
         var response = await HttpClient.PostAsync(url, new StringContent(jsonBody, Encoding.UTF8, "application/json"));
         response.EnsureSuccessStatusCode();
-        var content =  await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync();
         var vacations = NotionRawParser.ParseVacations(content);
         return vacations;
     }
-
 }
