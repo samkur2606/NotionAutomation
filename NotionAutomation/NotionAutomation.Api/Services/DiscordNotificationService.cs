@@ -1,9 +1,12 @@
-﻿using System.Diagnostics;
-using NotionAutomation.Api.Models;
+﻿using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Services;
 
-public class DiscordNotificationService(HttpClient httpClient, AppSettings appSettings, IHostEnvironment environment, ILogger<DiscordNotificationService> logger) : INotificationService
+public class DiscordNotificationService(
+    HttpClient httpClient,
+    AppSettings appSettings,
+    IHostEnvironment environment,
+    ILogger<DiscordNotificationService> logger) : INotificationService
 {
     private HttpClient HttpClient { get; } = httpClient;
     private AppSettings AppSettings { get; } = appSettings;
