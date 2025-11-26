@@ -50,13 +50,4 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         var holiday = NotionMapper.MapToHoliday(wikiDatabase);
         return holiday;
     }
-
-    public async Task<Vacation?> GetVacationsByDateAsync(DateTime vacationDay)
-    {
-        var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.Vacations.Database);
-        
-        var response = await NotionClient.Databases.QueryAsync(databaseId.ToString(), query);
-
-        return new Vacation();
-    }
 }

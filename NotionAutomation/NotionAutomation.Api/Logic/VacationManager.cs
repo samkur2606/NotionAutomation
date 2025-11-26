@@ -2,17 +2,18 @@
 
 namespace NotionAutomation.Api.Logic;
 
-public class VacationManager(NotionDatabaseService notionDatabaseService)
+public class VacationManager(NotionDatabaseService notionDatabaseService, NotionRawApiService notionRawApiService)
 {
     private NotionDatabaseService NotionDatabaseService { get; } = notionDatabaseService;
+    private NotionRawApiService NotionRawApiService { get; } = notionRawApiService;
 
     public async Task UpdateTimesheetForTodayVacationAsync()
     {
         var today = DateTime.Today;
-        var vacationDay = new DateTime(2025, 11, 10);
+        var vacationDay = new DateTime(2025, 12, 10);
         var timeSheetDay = new DateTime(2025, 11, 26);
 
-        var vacation = await NotionDatabaseService.GetVacationsByDateAsync(vacationDay);
+        var vacation = await NotionRawApiService.GetVacationsByDateAsync(vacationDay);
         if (vacation is null) return;
 
         var timesheet = await NotionDatabaseService.GetTimesheetByDateAsync(timeSheetDay);
