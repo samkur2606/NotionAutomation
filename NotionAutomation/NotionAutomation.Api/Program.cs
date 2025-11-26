@@ -19,22 +19,23 @@ builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton(appSettings);
-builder.Services.AddSingleton<NotionTest>();
+builder.Services.AddSingleton<ConfigurationHelper>();
 builder.Services.AddTransient<TestJob>();
-builder.Services.AddTransient<NotionPropertyParser>();
-builder.Services.AddTransient<NotionPageMapper>();
+builder.Services.AddTransient<NotionPagePropertyParser>();
+builder.Services.AddTransient<NotionMapper>();
 builder.Services.AddTransient<NotionPageUpdateBuilder>();
 builder.Services.AddTransient<NotionDatabaseService>();
 builder.Services.AddTransient<NotionPageService>();
 builder.Services.AddTransient<NotionRawApiService>();
+builder.Services.AddTransient<TimeSheetManager>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
 
 var app = builder.Build();
 
 // TEMP
-var notionService = app.Services.GetRequiredService<NotionTest>();
-await notionService.TestCall();
+var test = app.Services.GetRequiredService<TimeSheetManager>();
+await test.UpdateTimesheetForTodayHolidayAsync();
 //
 
 if (app.Environment.IsDevelopment())

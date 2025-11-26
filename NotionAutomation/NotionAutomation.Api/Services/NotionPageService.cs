@@ -1,15 +1,19 @@
 ﻿using Notion.Client;
+using NotionAutomation.Api.Converters;
+using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Services;
 
-public class NotionPageService(INotionClient notionClient)
+public class NotionPageService(INotionClient notionClient, NotionPageUpdateBuilder notionPageUpdateBuilder)
 {
-    public INotionClient NotionClient { get; } = notionClient;
+    private INotionClient NotionClient { get; } = notionClient;
+    private NotionPageUpdateBuilder NotionPageUpdateBuilder { get; } = notionPageUpdateBuilder;
 
-
-    public async Task<Page> UpdatePageAsync(string pageId, PagesUpdateParameters parameters)
+    public async Task<Page> UpdateTimesheetTypePropertyAsync(TimeSheet timesheet, TimeSheetType updateSheetType)
     {
-        var updatePage = await NotionClient.Pages.UpdateAsync(pageId, parameters);
-        return updatePage;
+        var property = NotionPageUpdateBuilder.CreateNotionPropertyUpdate(NotionSchema.TimeSheets.Properties.TypeName, updateSheetType);
+        var updateParams = NotionPageUpdateBuilder.CreatePagesUpdateParameters(property);
+        var updatedPage = await NotionClient.Pages.UpdateAsync(timesheet.PageId.ToString(), updateParams);
+        return updatedPage;
     }
 }

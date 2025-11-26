@@ -1,24 +1,50 @@
 ﻿using Notion.Client;
+using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Converters;
 
 public class NotionPageUpdateBuilder
 {
-    public PagesUpdateParameters CreatePagesUpdateParameters(Dictionary<string, object> properties)
+    public PagesUpdateParameters CreatePagesUpdateParameters(params NotionPropertyUpdate[] properties)
     {
-
         var notionProperties = new Dictionary<string, PropertyValue>();
-        foreach (var (propertyName, propertyValue) in properties)
+
+        foreach (var property in properties)
         {
-            notionProperties[propertyName] = propertyValue switch
+            notionProperties[property.Name] = property.Value switch
             {
-                SelectOption selectOption => new SelectPropertyValue { Select = selectOption },
-                DateTimeOffset dateTimeOffset => new DatePropertyValue { Date = new Date { Start = dateTimeOffset } },
-                _ => throw new ArgumentException($"Unsupported type for '{propertyName}'.")
+                Enum enumValue => CreateSelectPropertyValue(enumValue),
+                DateTimeOffset date => CreateDatePropertyValue(date),
+                _ => throw new ArgumentException($"Unsupported type for '{property.Name}'. Only Enum and DateTimeOffset are supported.")
             };
         }
 
         var pagesUpdateParameters = new PagesUpdateParameters { Properties = notionProperties };
         return pagesUpdateParameters;
+    }
+    
+    public NotionPropertyUpdate CreateNotionPropertyUpdate(string propertyName, object propertyValue)
+    {
+        var property = new NotionPropertyUpdate
+        {
+            Name = propertyName,
+            Value = propertyValue
+        };
+
+        return property;
+    }
+
+    private SelectPropertyValue CreateSelectPropertyValue(Enum value)
+    {
+        var selectOption = new SelectOption { Name = value.ToString() };
+        var selectProperty = new SelectPropertyValue { Select = selectOption };
+        return selectProperty;
+    }
+
+    private DatePropertyValue CreateDatePropertyValue(DateTimeOffset value)
+    {
+        var date = new Date { Start = value };
+        var dateProperty = new DatePropertyValue { Date = date };
+        return dateProperty;
     }
 }

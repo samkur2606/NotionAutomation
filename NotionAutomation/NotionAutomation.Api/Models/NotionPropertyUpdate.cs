@@ -1,7 +1,7 @@
 ﻿namespace NotionAutomation.Api.Models;
 
-public class NotionDatabase
+public class NotionPropertyUpdate
 {
     public string Name { get; set; } = null!;
-    public Guid Id { get; set; }
+    public object Value { get; set; } = null!;
 }
