@@ -12,8 +12,8 @@ public class VacationManager(NotionDatabaseService notionDatabaseService)
         var vacationDay = new DateTime(2025, 11, 10);
         var timeSheetDay = new DateTime(2025, 11, 26);
 
-        var holiday = await NotionDatabaseService.GetVacationsByDateAsync(vacationDay);
-        if (holiday is null) return;
+        var vacation = await NotionDatabaseService.GetVacationsByDateAsync(vacationDay);
+        if (vacation is null) return;
 
         var timesheet = await NotionDatabaseService.GetTimesheetByDateAsync(timeSheetDay);
         if (timesheet is null) throw new Exception($"Timesheet not found for date {today:yyyy-MM-dd}. Cannot mark holiday.");

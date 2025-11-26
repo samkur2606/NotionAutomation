@@ -13,8 +13,8 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
 
     public async Task<List<IWikiDatabase>> QueryDatabaseAsync(Guid notionDatabaseId, int pageSize)
     {
-        var result = await NotionClient.Databases.QueryAsync(notionDatabaseId.ToString(), new DatabasesQueryParameters { PageSize = pageSize });
-        return result.Results;
+        var response = await NotionClient.Databases.QueryAsync(notionDatabaseId.ToString(), new DatabasesQueryParameters { PageSize = pageSize });
+        return response.Results;
     }
 
     public async Task<DatabaseQueryResponse> GetDataByDateAsync(Guid databaseId, DateTime dateTime, string notionDatePropertyName)
@@ -51,17 +51,12 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
         return holiday;
     }
 
-    public async Task<object> GetVacationsByDateAsync(DateTime vacationDay)
+    public async Task<Vacation?> GetVacationsByDateAsync(DateTime vacationDay)
     {
         var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.Vacations.Database);
-
-        // Filter: alle Vacations, die start <= vacationDay
-        var dateFilter = new DateFilter(NotionNames.Vacations.Properties.Duration, onOrBefore: vacationDay);
-        var query = new DatabasesQueryParameters { Filter = dateFilter };
-
+        
         var response = await NotionClient.Databases.QueryAsync(databaseId.ToString(), query);
 
-        // Alle Ergebnisse zurückgeben
-        return response.Results;
+        return new Vacation();
     }
 }
