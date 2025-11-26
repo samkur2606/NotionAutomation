@@ -3,7 +3,7 @@ using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Converters;
 
-public class NotionPagePropertyParser
+public class NotionParser
 {
     private const string NameProperty = "Name";
 
