@@ -12,7 +12,7 @@ public class NotionMapper(NotionPagePropertyParser notionPagePropertyParser)
         var holiday = new Holiday
         {
             Name = NotionPagePropertyParser.GetName(wikiDatabase),
-            Date = NotionPagePropertyParser.GetDate(wikiDatabase, NotionSchema.Holidays.Properties.DateName)
+            Date = NotionPagePropertyParser.GetDate(wikiDatabase, NotionNames.Holidays.Properties.Date)
         };
 
         return holiday;
@@ -20,13 +20,13 @@ public class NotionMapper(NotionPagePropertyParser notionPagePropertyParser)
 
     public TimeSheet MapToTimeSheet(IWikiDatabase wikiDatabase)
     {
-        var typeAsString = NotionPagePropertyParser.GetSelect(wikiDatabase, NotionSchema.TimeSheets.Properties.TypeName);
+        var typeAsString = NotionPagePropertyParser.GetSelect(wikiDatabase, NotionNames.TimeSheets.Properties.Type);
         var type = ParseEnum<TimeSheetType>(typeAsString);
 
         var timeSheet = new TimeSheet
         {
             PageId = NotionPagePropertyParser.GetPageId(wikiDatabase),
-            Date = NotionPagePropertyParser.GetDate(wikiDatabase, NotionSchema.Holidays.Properties.DateName),
+            Date = NotionPagePropertyParser.GetDate(wikiDatabase, NotionNames.Holidays.Properties.Date),
             Type = type
         };
 

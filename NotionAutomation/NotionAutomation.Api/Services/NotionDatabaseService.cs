@@ -2,7 +2,6 @@
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Models;
-using NotionSchema = NotionAutomation.Api.Models.NotionSchema;
 
 namespace NotionAutomation.Api.Services;
 
@@ -28,8 +27,8 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
 
     public async Task<TimeSheet?> GetTimesheetByDateAsync(DateTime dateTime)
     {
-        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.TimeSheets.DatabaseName);
-        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.TimeSheets.Properties.DateName);
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.TimeSheets.Database);
+        var response = await GetDataByDateAsync(databaseId, dateTime, NotionNames.TimeSheets.Properties.Date);
 
         var wikiDatabase = response.Results.FirstOrDefault();
         if (wikiDatabase is null)
@@ -41,8 +40,8 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
 
     public async Task<Holiday?> GetHolidaysByDateAsync(DateTime dateTime)
     {
-        var databaseId = ConfigurationHelper.GetDatabaseId(NotionSchema.Holidays.DatabaseName);
-        var response = await GetDataByDateAsync(databaseId, dateTime, NotionSchema.Holidays.Properties.DateName);
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.Holidays.Database);
+        var response = await GetDataByDateAsync(databaseId, dateTime, NotionNames.Holidays.Properties.Date);
 
         var wikiDatabase = response.Results.FirstOrDefault();
         if (wikiDatabase is null)
@@ -54,6 +53,15 @@ public class NotionDatabaseService(INotionClient notionClient, ConfigurationHelp
 
     public async Task<object> GetVacationsByDateAsync(DateTime vacationDay)
     {
-        throw new NotImplementedException();
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.Vacations.Database);
+
+        // Filter: alle Vacations, die start <= vacationDay
+        var dateFilter = new DateFilter(NotionNames.Vacations.Properties.Duration, onOrBefore: vacationDay);
+        var query = new DatabasesQueryParameters { Filter = dateFilter };
+
+        var response = await NotionClient.Databases.QueryAsync(databaseId.ToString(), query);
+
+        // Alle Ergebnisse zurückgeben
+        return response.Results;
     }
 }

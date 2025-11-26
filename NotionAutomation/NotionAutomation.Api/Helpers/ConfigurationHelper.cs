@@ -13,6 +13,6 @@ public class ConfigurationHelper(AppSettings appSettings)
         if (databases.TryGetValue(name, out var id))
             return id;
 
-        throw new KeyNotFoundException($"DatabaseName '{name}' not found in configuration.");
+        throw new KeyNotFoundException($"Database '{name}' not found in configuration.");
     }
 }

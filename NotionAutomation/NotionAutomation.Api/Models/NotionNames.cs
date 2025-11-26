@@ -1,4 +1,4 @@
 ﻿namespace NotionAutomation.Api.Models;
 
-public static partial class NotionSchema;
+public static partial class NotionNames;
 
