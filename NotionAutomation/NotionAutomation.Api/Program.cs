@@ -30,15 +30,15 @@ builder.Services.AddTransient<NotionRawApiService>();
 builder.Services.AddTransient<TimeSheetManager>();
 builder.Services.AddTransient<NotionRawParser>();
 builder.Services.AddTransient<INotificationService, DiscordNotificationService>();
+builder.Services.AddSingleton(typeof(ILogger<>), typeof(NotionLogger<>));
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
 
 var app = builder.Build();
 
 // TEMP
-var test = app.Services.GetRequiredService<INotificationService>();
-await test.NotifySuccess("Das ist ein erfolgreicher Test");
-await test.NotifyError("Das ist ein fehlgeschlagener Test");
+var test = app.Services.GetRequiredService<ILogger<Program>>();
+test.LogInformation("Was geht ab");
 //
 
 if (app.Environment.IsDevelopment())

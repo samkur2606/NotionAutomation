@@ -11,7 +11,7 @@ public class NotionPageService(INotionClient notionClient, NotionPageUpdateBuild
 
     public async Task<Page> UpdateTimesheetTypePropertyAsync(TimeSheet timesheet, TimeSheetType updateTimeSheetType)
     {
-        var property = NotionPageUpdateBuilder.CreateNotionPropertyUpdate(NotionNames.TimeSheets.Properties.Type, updateTimeSheetType);
+        var property = NotionPageUpdateBuilder.CreateNotionPropertyUpdate(NotionPropertyUpdateType.Select, NotionNames.TimeSheets.Properties.Type, updateTimeSheetType);
         var updateParams = NotionPageUpdateBuilder.CreatePagesUpdateParameters(property);
         var updatedPage = await NotionClient.Pages.UpdateAsync(timesheet.PageId.ToString(), updateParams);
         return updatedPage;
