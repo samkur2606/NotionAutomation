@@ -6,11 +6,14 @@ using NotionAutomation.Api.Logic;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Scheduling;
 using NotionAutomation.Api.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var appSettings = builder.Configuration.Get<AppSettings>() ?? throw new Exception("AppSettings missing");
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
+builder.Host.UseSerilog();
 
-// Add services to the container.
+// todo(sk): hangfire configuration clean up
 var hangfireConnection = builder.Configuration.GetConnectionString("Hangfire");
 DirectoryHelper.CreateFolderIfNecessary(hangfireConnection);
 builder.Services.AddHangfire(config => { config.UseSQLiteStorage(hangfireConnection); });
@@ -30,7 +33,6 @@ builder.Services.AddTransient<NotionRawApiService>();
 builder.Services.AddTransient<TimeSheetManager>();
 builder.Services.AddTransient<NotionRawParser>();
 builder.Services.AddTransient<INotificationService, DiscordNotificationService>();
-builder.Services.AddSingleton(typeof(ILogger<>), typeof(NotionLogger<>));
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
 

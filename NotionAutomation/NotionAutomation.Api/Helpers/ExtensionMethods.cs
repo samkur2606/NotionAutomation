@@ -2,6 +2,9 @@
 using Notion.Client;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Scheduling;
+using NotionAutomation.Api.Services;
+using Serilog.Configuration;
+using Serilog;
 
 namespace NotionAutomation.Api.Helpers;
 
