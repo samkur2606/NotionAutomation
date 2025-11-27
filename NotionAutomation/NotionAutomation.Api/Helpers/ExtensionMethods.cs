@@ -5,6 +5,7 @@ using NotionAutomation.Api.Scheduling;
 using NotionAutomation.Api.Services;
 using Serilog.Configuration;
 using Serilog;
+using Serilog.Events;
 
 namespace NotionAutomation.Api.Helpers;
 
@@ -47,10 +48,15 @@ public static class ExtensionMethods
     public static WebApplicationBuilder AddCustomLoggingConfiguration(this WebApplicationBuilder builder, AppSettings appSettings)
     {
         var notionClient = builder.Services.BuildServiceProvider().GetRequiredService<INotionClient>();
+        const string outputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}";
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
-            .WriteTo.Console()
-            .WriteTo.File("bin/Debug/net8.0/logs/log.txt", rollingInterval: RollingInterval.Day)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
+            .MinimumLevel.Override("Hangfire", LogEventLevel.Warning)
+            .WriteTo.Console(outputTemplate: outputTemplate)
+            .WriteTo.File("bin/Debug/net8.0/logs/log.txt", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate)
             .WriteTo.Sink(new NotionSink(appSettings, notionClient))
             .CreateLogger();
 
