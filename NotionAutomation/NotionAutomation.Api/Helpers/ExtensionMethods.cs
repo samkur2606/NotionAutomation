@@ -43,4 +43,18 @@ public static class ExtensionMethods
         var description = attrs.Length > 0 ? ((DescriptionAttribute)attrs[0]).Description : value.ToString();
         return description;
     }
+
+    public static WebApplicationBuilder AddCustomLoggingConfiguration(this WebApplicationBuilder builder, AppSettings appSettings)
+    {
+        var notionClient = builder.Services.BuildServiceProvider().GetRequiredService<INotionClient>();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.Console()
+            .WriteTo.File("bin/Debug/net8.0/logs/log.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.Sink(new NotionSink(appSettings, notionClient))
+            .CreateLogger();
+
+        builder.Host.UseSerilog();
+        return builder;
+    }
 }

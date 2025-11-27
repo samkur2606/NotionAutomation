@@ -1,17 +1,15 @@
 using Hangfire;
 using Hangfire.Storage.SQLite;
+using Notion.Client;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Logic;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Scheduling;
 using NotionAutomation.Api.Services;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var appSettings = builder.Configuration.Get<AppSettings>() ?? throw new Exception("AppSettings missing");
-Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
-builder.Host.UseSerilog();
 
 // todo(sk): hangfire configuration clean up
 var hangfireConnection = builder.Configuration.GetConnectionString("Hangfire");
@@ -35,6 +33,7 @@ builder.Services.AddTransient<NotionRawParser>();
 builder.Services.AddTransient<INotificationService, DiscordNotificationService>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
+builder.AddCustomLoggingConfiguration(appSettings);
 
 var app = builder.Build();
 

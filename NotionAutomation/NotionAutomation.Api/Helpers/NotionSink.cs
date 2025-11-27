@@ -11,13 +11,13 @@ public class NotionSink(AppSettings appSettings, INotionClient notionClient, IFo
 {
     private AppSettings AppSettings { get; } = appSettings;
     private INotionClient NotionClient { get; } = notionClient;
+    public IFormatProvider? FormatProvider { get; } = formatProvider;
     private NotionPageUpdateBuilder NotionPageUpdateBuilder { get; } = new();
-
 
     public void Emit(LogEvent? logEvent)
     {
         if (logEvent == null) return;
-        var message = logEvent.RenderMessage(formatProvider);
+        var message = logEvent.RenderMessage(FormatProvider);
         _ = LogToNotionAsync(message);
     }
 
