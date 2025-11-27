@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.Extensions.Options;
 using Notion.Client;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
@@ -6,11 +7,11 @@ using NotionAutomation.Api.Models;
 
 namespace NotionAutomation.Api.Services;
 
-public class NotionLogger<T>(INotionClient notionClient, ConfigurationHelper configurationHelper, NotionPageUpdateBuilder notionPageUpdateBuilder) : ILogger<T>
+public class NotionLogger<T>(INotionClient notionClient, AppSettings appSettings) : ILogger<T>
 {
     private INotionClient NotionClient { get; } = notionClient;
-    private ConfigurationHelper ConfigurationHelper { get; } = configurationHelper;
-    private NotionPageUpdateBuilder NotionPageUpdateBuilder { get; } = notionPageUpdateBuilder;
+    private AppSettings AppSettings { get; } = appSettings;
+    private NotionPageUpdateBuilder NotionPageUpdateBuilder { get; } = new();
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
@@ -22,7 +23,7 @@ public class NotionLogger<T>(INotionClient notionClient, ConfigurationHelper con
         return true;
     }
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         if (!IsEnabled(logLevel)) return;
 
@@ -38,15 +39,14 @@ public class NotionLogger<T>(INotionClient notionClient, ConfigurationHelper con
     {
         try
         {
+            var databaseId = AppSettings.Notion.Databases.First(i => i.Name == NotionNames.NotionAutomationLogs.Database).Id;
             var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} [{logLevel}] {message}";
-            var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.NotionAutomationLogs.Database);
             var notionPropertyUpdate = new NotionPropertyUpdate { Type = NotionPropertyUpdateType.Title, Name = NotionNames.NotionAutomationLogs.Properties.Name, Value = logMessage };
             var pagesCreateParameters = NotionPageUpdateBuilder.CreatePagesCreateParameters(databaseId, notionPropertyUpdate);
             await NotionClient.Pages.CreateAsync(pagesCreateParameters);
         }
         catch
         {
-            var errorMessage = "NotionLogger failed to log: " + message;
             Debug.WriteLine("NotionLogger failed to log: " + message);
         }
     }
