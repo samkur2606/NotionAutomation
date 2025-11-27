@@ -38,7 +38,7 @@ var app = builder.Build();
 
 // TEMP
 var test = app.Services.GetRequiredService<ILogger<Program>>();
-test.LogInformation("Was geht ab");
+test.LogWarning("Was geht ab");
 //
 
 if (app.Environment.IsDevelopment())
