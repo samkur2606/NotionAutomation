@@ -41,11 +41,19 @@ public class NotionPageUpdateBuilder
                 NotionPropertyUpdateType.Title => CreateTitlePropertyValue((string)property.Value),
                 NotionPropertyUpdateType.Select => CreateSelectPropertyValue((Enum)property.Value),
                 NotionPropertyUpdateType.Date => CreateDatePropertyValue((DateTimeOffset)property.Value),
-                _ => throw new ArgumentException($"Unsupported type for '{property.Name}'. Only Title, Select, and Date are supported.")
+                NotionPropertyUpdateType.RichText => CreateRichTextPropertyValue((string)property.Value),
+                _ => throw new ArgumentException($"Unsupported type for '{property.Name}'. Only Title, Select, RichText and Date are supported.")
             };
         }
 
         return notionProperties;
+    }
+
+    private PropertyValue CreateRichTextPropertyValue(string? text)
+    {
+        var richText = new List<RichTextBase> { new RichTextText { Text = new Text { Content = text ?? string.Empty } } };
+        var property = new RichTextPropertyValue { RichText = richText };
+        return property;
     }
 
     public NotionPropertyUpdate CreateNotionPropertyUpdate(NotionPropertyUpdateType type, string propertyName, object propertyValue)
