@@ -29,7 +29,6 @@ builder.Services.AddTransient<NotionPageService>();
 builder.Services.AddTransient<NotionRawApiService>();
 builder.Services.AddTransient<TimeSheetManager>();
 builder.Services.AddTransient<NotionRawParser>();
-builder.Services.AddTransient<INotificationService, DiscordNotificationService>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
 builder.AddCustomLoggingConfiguration(appSettings);
@@ -39,6 +38,7 @@ var app = builder.Build();
 // TEMP
 var test = app.Services.GetRequiredService<ILogger<Program>>();
 test.LogInformation("Was geht ab {test}", "das ist ein Test");
+test.LogError("Das ist ein Fehler was geht ab");
 //
 
 if (app.Environment.IsDevelopment())

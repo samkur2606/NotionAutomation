@@ -59,10 +59,10 @@ public static class ExtensionMethods
             .WriteTo.Console(outputTemplate: outputTemplate)
             .WriteTo.File("bin/Debug/net8.0/logs/log.txt", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate)
             .WriteTo.Sink(new NotionSink(appSettings, notionClient))
-            //.WriteTo.Logger(i => i
-            //    .MinimumLevel.Error()
-            //    .WriteTo.Discord(discordWebhookId, discordWebhookToken)
-            //)
+            .WriteTo.Logger(i => i
+                .MinimumLevel.Error()
+                .WriteTo.Discord(discordWebhookId, discordWebhookToken)
+            )
             .CreateLogger();
 
         builder.Host.UseSerilog();

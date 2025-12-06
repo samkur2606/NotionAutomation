@@ -5,14 +5,13 @@ using NotionAutomation.Api.Services;
 
 namespace NotionAutomation.Api.Logic;
 
-public class TimeSheetManager(NotionDatabaseService notionDatabaseService, NotionPageService notionPageService, NotionMapper notionMapper, NotionRawApiService notionRawApiService, ILogger<TimeSheetManager> logger, INotificationService notificationService)
+public class TimeSheetManager(NotionDatabaseService notionDatabaseService, NotionPageService notionPageService, NotionMapper notionMapper, NotionRawApiService notionRawApiService, ILogger<TimeSheetManager> logger)
 {
     private NotionDatabaseService NotionDatabaseService { get; } = notionDatabaseService;
     private NotionPageService NotionPageService { get; } = notionPageService;
     private NotionMapper NotionMapper { get; } = notionMapper;
     private NotionRawApiService NotionRawApiService { get; } = notionRawApiService;
     private ILogger<TimeSheetManager> Logger { get; } = logger;
-    private INotificationService NotificationService { get; } = notificationService;
 
     public async Task UpdateTimesheetForTodayHolidayAsync()
     {
@@ -31,13 +30,11 @@ public class TimeSheetManager(NotionDatabaseService notionDatabaseService, Notio
         {
             var message = $"Timesheet for {today:yyyy-MM-dd} successfully updated to {nameof(TimeSheetType.Holiday)}.";
             Logger.LogInformation(message);
-            await NotificationService.NotifySuccess(message);
         }
         else
         {
             var message = $"Failed to update timesheet for {today:yyyy-MM-dd} to {nameof(TimeSheetType.Holiday)}. Current type: {updatedTimeSheet.Type}";
             Logger.LogError(message);
-            await NotificationService.NotifyError(message);
         }
     }
 
@@ -58,13 +55,11 @@ public class TimeSheetManager(NotionDatabaseService notionDatabaseService, Notio
         {
             var message = $"Timesheet for {today:yyyy-MM-dd} successfully updated to {nameof(TimeSheetType.VacationDay)}.";
             Logger.LogInformation(message);
-            await NotificationService.NotifySuccess(message);
         }
         else
         {
             var message = $"Failed to update timesheet for {today:yyyy-MM-dd} to {nameof(TimeSheetType.VacationDay)}. Current type: {updatedTimeSheet.Type}";
             Logger.LogError(message);
-            await NotificationService.NotifyError(message);
         }
     }
 }
