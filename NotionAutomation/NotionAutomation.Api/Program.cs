@@ -1,6 +1,5 @@
 using Hangfire;
 using Hangfire.Storage.SQLite;
-using Notion.Client;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Logic;

@@ -2,10 +2,9 @@
 using Notion.Client;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Scheduling;
-using NotionAutomation.Api.Services;
-using Serilog.Configuration;
 using Serilog;
 using Serilog.Events;
+using Serilog.Sinks.Discord;
 
 namespace NotionAutomation.Api.Helpers;
 
@@ -49,6 +48,8 @@ public static class ExtensionMethods
     {
         var notionClient = builder.Services.BuildServiceProvider().GetRequiredService<INotionClient>();
         const string outputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}";
+        var discordWebhookId = DiscordUrlExtractor.ExtractWebhookId(appSettings.DiscordWebhookUrl);
+        var discordWebhookToken = DiscordUrlExtractor.ExtractWebhookToken(appSettings.DiscordWebhookUrl);
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
@@ -58,6 +59,10 @@ public static class ExtensionMethods
             .WriteTo.Console(outputTemplate: outputTemplate)
             .WriteTo.File("bin/Debug/net8.0/logs/log.txt", rollingInterval: RollingInterval.Day, outputTemplate: outputTemplate)
             .WriteTo.Sink(new NotionSink(appSettings, notionClient))
+            //.WriteTo.Logger(i => i
+            //    .MinimumLevel.Error()
+            //    .WriteTo.Discord(discordWebhookId, discordWebhookToken)
+            //)
             .CreateLogger();
 
         builder.Host.UseSerilog();
