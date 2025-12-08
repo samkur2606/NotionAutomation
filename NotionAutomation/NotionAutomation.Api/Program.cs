@@ -36,8 +36,8 @@ builder.AddCustomLoggingConfiguration(appSettings);
 var app = builder.Build();
 
 // TEMP
-var test = app.Services.GetRequiredService<ILogger<Program>>();
-test.LogError("Error: This is an error");
+var test = app.Services.GetRequiredService<NotionRawApiService>();
+var blub = await test.GetVacationsByMonthAsync(2025, 4);
 //
 
 if (app.Environment.IsDevelopment())

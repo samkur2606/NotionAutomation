@@ -63,4 +63,44 @@ public class NotionRawApiService
         var vacations = NotionRawParser.ParseVacations(content);
         return vacations;
     }
+
+    public async Task<List<Vacation>> GetVacationsByMonthAsync(int year, int month)
+    {
+        var databaseId = ConfigurationHelper.GetDatabaseId(NotionNames.Vacations.Database);
+        var url = $"{AppSettings.Notion.ApiBaseUrl}/{databaseId}/query";
+
+        var monthStart = new DateTime(year, month, 1);
+        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+        var isoStart = monthStart.ToString("yyyy-MM-dd");
+        var isoEnd = monthEnd.ToString("yyyy-MM-dd");
+
+        var jsonBody = $@"
+        {{
+            ""filter"": {{
+                ""and"": [
+                    {{
+                        ""property"": ""Duration"",
+                        ""date"": {{
+                            ""on_or_before"": ""{isoEnd}""
+                        }}
+                    }},
+                    {{
+                        ""property"": ""Duration"",
+                        ""date"": {{
+                            ""on_or_after"": ""{isoStart}""
+                        }}
+                    }}
+                ]
+            }}
+        }}";
+
+        var response = await HttpClient.PostAsync(url, new StringContent(jsonBody, Encoding.UTF8, "application/json"));
+        response.EnsureSuccessStatusCode();
+
+        var content = await response.Content.ReadAsStringAsync();
+        var vacations = NotionRawParser.ParseVacations(content);
+
+        return vacations;
+    }
 }
