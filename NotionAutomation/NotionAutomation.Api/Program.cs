@@ -10,7 +10,7 @@ using NotionAutomation.Api.Services;
 var builder = WebApplication.CreateBuilder(args);
 var appSettings = builder.Configuration.Get<AppSettings>() ?? throw new Exception("AppSettings missing");
 
-// Add services to the container.
+// todo(sk): hangfire configuration clean up
 var hangfireConnection = builder.Configuration.GetConnectionString("Hangfire");
 DirectoryHelper.CreateFolderIfNecessary(hangfireConnection);
 builder.Services.AddHangfire(config => { config.UseSQLiteStorage(hangfireConnection); });
@@ -31,12 +31,13 @@ builder.Services.AddTransient<TimeSheetManager>();
 builder.Services.AddTransient<NotionRawParser>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
+builder.AddCustomLoggingConfiguration(appSettings);
 
 var app = builder.Build();
 
 // TEMP
-var test = app.Services.GetRequiredService<TimeSheetManager>();
-await test.UpdateTimesheetForTodayVacationAsync();
+var test = app.Services.GetRequiredService<ILogger<Program>>();
+test.LogError("Error: This is an error");
 //
 
 if (app.Environment.IsDevelopment())
@@ -46,6 +47,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHangfireUiInEnglish();
+app.RegisterUnhandledExceptionLogging();
 app.UseHangfireDashboard();
 app.RegisterRecurringJobs();
 app.UseHttpsRedirection();
