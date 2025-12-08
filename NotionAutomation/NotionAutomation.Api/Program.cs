@@ -37,8 +37,7 @@ var app = builder.Build();
 
 // TEMP
 var test = app.Services.GetRequiredService<ILogger<Program>>();
-test.LogInformation("Was geht ab {test}", "das ist ein Test");
-test.LogError("Das ist ein Fehler was geht ab");
+test.LogError("Error: This is an error");
 //
 
 if (app.Environment.IsDevelopment())
@@ -48,6 +47,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHangfireUiInEnglish();
+app.RegisterUnhandledExceptionLogging();
 app.UseHangfireDashboard();
 app.RegisterRecurringJobs();
 app.UseHttpsRedirection();

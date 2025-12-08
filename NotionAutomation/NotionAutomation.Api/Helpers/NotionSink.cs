@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Notion.Client;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Models;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Json;
 
 namespace NotionAutomation.Api.Helpers;
 
@@ -43,15 +44,18 @@ public class NotionSink(AppSettings appSettings, INotionClient notionClient, IFo
     private NotionLog CreateNotionLog(LogEvent logEvent)
     {
         var source = GetLogSource(logEvent);
+        var truncatedMessage = TruncateMessage(logEvent.RenderMessage());
+        var truncatedExceptionMessage = TruncateMessage(logEvent.Exception?.ToString());
+        var truncatedJson = TruncateMessage(GetJson(logEvent));
 
         var notionLog = new NotionLog
         {
             Title = CreateTitleHash(logEvent),
             LogLevel = Enum.Parse<NotionLogLevel>(logEvent.Level.ToString()),
-            Message = logEvent.RenderMessage(),
-            Exception = logEvent.Exception?.ToString(),
+            Message = truncatedMessage,
+            Exception = truncatedExceptionMessage,
             Source = source,
-            AdditionalData = GetJson(logEvent),
+            AdditionalData = truncatedJson,
             LoggingTime = logEvent.Timestamp
         };
 
@@ -78,11 +82,44 @@ public class NotionSink(AppSettings appSettings, INotionClient notionClient, IFo
 
     private string GetJson(LogEvent logEvent)
     {
-        var sw = new StringWriter();
-        var formatter = new JsonFormatter(renderMessage: true);
-        formatter.Format(logEvent, sw);
-        return sw.ToString();
+        var jsonDict = new Dictionary<string, object?>
+        {
+            ["Timestamp"] = logEvent.Timestamp,
+            ["Level"] = logEvent.Level.ToString(),
+            ["Message"] = logEvent.RenderMessage(),
+            ["SourceContext"] = logEvent.Properties.TryGetValue("SourceContext", out var sourceContext) ? ConvertLogEventPropertyValue(sourceContext) : null,
+            ["Exception"] = TruncateMessage(logEvent.Exception?.ToString(), 100),
+            ["Properties"] = logEvent.Properties.ToDictionary(
+                kvp => kvp.Key,
+                kvp => ConvertLogEventPropertyValue(kvp.Value)
+            )
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var json = JsonSerializer.Serialize(jsonDict, options);
+        return json;
     }
+
+    private object? ConvertLogEventPropertyValue(LogEventPropertyValue value)
+    {
+        return value switch
+        {
+            ScalarValue scalar => scalar.Value,
+            SequenceValue seq => seq.Elements.Select(ConvertLogEventPropertyValue).ToArray(),
+            StructureValue structVal => structVal.Properties.ToDictionary(p => p.Name, p => ConvertLogEventPropertyValue(p.Value)),
+            DictionaryValue dictVal => dictVal.Elements.ToDictionary(
+                e => e.Key.Value?.ToString() ?? "",
+                e => ConvertLogEventPropertyValue(e.Value)
+            ),
+            _ => value.ToString()
+        };
+    }
+
 
     private static List<NotionPropertyUpdate> CreateNotionPropertyUpdate(NotionLog notionLog)
     {
@@ -100,5 +137,12 @@ public class NotionSink(AppSettings appSettings, INotionClient notionClient, IFo
             new() { Type = NotionPropertyUpdateType.Date, Name = NotionNames.NotionAutomationLogs.Properties.LoggingTime, Value = notionLog.LoggingTime! }
         };
         return updateProperties;
+    }
+
+    private static string? TruncateMessage(string? message, int maxLength = 1800)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return null;
+        var truncatedMessage = message.Length <= maxLength ? message : message[..maxLength] + "... [truncated]";
+        return truncatedMessage;
     }
 }

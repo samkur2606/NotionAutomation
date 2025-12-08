@@ -15,6 +15,11 @@ public static class ExtensionMethods
         builder.UseMiddleware<HangfireUiInEnglishMiddleware>();
     }
 
+    public static void RegisterUnhandledExceptionLogging(this IApplicationBuilder builder)
+    {
+        builder.UseMiddleware<UnhandledExceptionLoggingMiddleware>();
+    }
+
     public static void RegisterRecurringJobs(this IApplicationBuilder builder)
     {
         JobScheduler.RegisterJobs();

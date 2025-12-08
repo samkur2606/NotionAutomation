@@ -1,11 +1,15 @@
-﻿using System.Diagnostics;
-using NotionAutomation.Api.Converters;
+﻿using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Models;
 using NotionAutomation.Api.Services;
 
 namespace NotionAutomation.Api.Logic;
 
-public class TimeSheetManager(NotionDatabaseService notionDatabaseService, NotionPageService notionPageService, NotionMapper notionMapper, NotionRawApiService notionRawApiService, ILogger<TimeSheetManager> logger)
+public class TimeSheetManager(
+    NotionDatabaseService notionDatabaseService,
+    NotionPageService notionPageService,
+    NotionMapper notionMapper,
+    NotionRawApiService notionRawApiService,
+    ILogger<TimeSheetManager> logger)
 {
     private NotionDatabaseService NotionDatabaseService { get; } = notionDatabaseService;
     private NotionPageService NotionPageService { get; } = notionPageService;
@@ -16,7 +20,7 @@ public class TimeSheetManager(NotionDatabaseService notionDatabaseService, Notio
     public async Task UpdateTimesheetForTodayHolidayAsync()
     {
         var today = DateTime.Today;
-        
+
         var holiday = await NotionDatabaseService.GetHolidaysByDateAsync(today);
         if (holiday is null) return;
 
@@ -25,7 +29,7 @@ public class TimeSheetManager(NotionDatabaseService notionDatabaseService, Notio
 
         var updatedPage = await NotionPageService.UpdateTimesheetTypePropertyAsync(timesheet, TimeSheetType.Holiday);
         var updatedTimeSheet = NotionMapper.MapToTimeSheet(updatedPage);
-        
+
         if (updatedTimeSheet.Type == TimeSheetType.VacationDay)
         {
             var message = $"Timesheet for {today:yyyy-MM-dd} successfully updated to {nameof(TimeSheetType.Holiday)}.";
@@ -41,7 +45,7 @@ public class TimeSheetManager(NotionDatabaseService notionDatabaseService, Notio
     public async Task UpdateTimesheetForTodayVacationAsync()
     {
         var today = DateTime.Today;
-        
+
         var vacations = await NotionRawApiService.GetVacationsByDateAsync(today);
         if (!vacations.Any()) return;
 
