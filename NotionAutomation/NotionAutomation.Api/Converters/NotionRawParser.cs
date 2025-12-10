@@ -17,13 +17,8 @@ public class NotionRawParser
             if (properties == null) continue;
 
             var name = properties[NotionNames.Vacations.Properties.Name]?["title"]?.FirstOrDefault()?["plain_text"]?.ToString();
-
-            var durationProperty = properties[NotionNames.Vacations.Properties.Duration]?["date"];
-            
-            if (durationProperty is null) throw new Exception($"Vacation {NotionNames.Vacations.Properties.Duration} property is missing.");
-
-            var startDate = durationProperty["start"]?.ToObject<DateTime?>();
-            var endDate = durationProperty["end"]?.ToObject<DateTime?>();
+            var startDate = properties[NotionNames.Vacations.Properties.DateStart]?["formula"]?["date"]?["start"]?.ToObject<DateTime?>();
+            var endDate = properties[NotionNames.Vacations.Properties.DateEnd]?["formula"]?["date"]?["start"]?.ToObject<DateTime?>();
 
             if (startDate is null) throw new Exception("Vacation 'Start Date' is missing or invalid."); ;
             if (endDate is null) throw new Exception("Vacation 'End Date' is missing or invalid."); ;

@@ -72,23 +72,23 @@ public class NotionRawApiService
         var monthStart = new DateTime(year, month, 1);
         var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
-        var isoStart = monthStart.ToString("yyyy-MM-dd");
-        var isoEnd = monthEnd.ToString("yyyy-MM-dd");
+        var isoDateStart = monthStart.ToString("yyyy-MM-dd");
+        var isoDateEnd = monthEnd.ToString("yyyy-MM-dd");
 
         var jsonBody = $@"
         {{
             ""filter"": {{
                 ""and"": [
                     {{
-                        ""property"": ""Duration"",
+                        ""property"": ""{NotionNames.Vacations.Properties.DateStart}"",
                         ""date"": {{
-                            ""on_or_before"": ""{isoEnd}""
+                            ""on_or_before"": ""{isoDateEnd}""
                         }}
                     }},
                     {{
-                        ""property"": ""Duration"",
+                        ""property"": ""{NotionNames.Vacations.Properties.DateEnd}"",
                         ""date"": {{
-                            ""on_or_after"": ""{isoStart}""
+                            ""on_or_after"": ""{isoDateStart}""
                         }}
                     }}
                 ]
@@ -102,5 +102,32 @@ public class NotionRawApiService
         var vacations = NotionRawParser.ParseVacations(content);
 
         return vacations;
+    }
+
+    public async Task<int> GetVacationDaysInMonthAsync(int year, int month)
+    {
+        var monthStart = new DateTime(year, month, 1);
+        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+        var vacations = await GetVacationsByMonthAsync(year, month);
+
+        var totalDays = 0;
+
+        foreach (var vacation in vacations)
+        {
+            if (vacation.Duration is null) throw new Exception($"Vacation '{vacation.Name ?? "Unnamed"}' has no Duration set. Cannot calculate vacation days.");
+
+            var vacationStart = vacation.Duration.Value.Start;
+            var vacationEnd = vacation.Duration.Value.End;
+
+            var overlapStart = vacationStart > monthStart ? vacationStart : monthStart;
+            var overlapEnd = vacationEnd < monthEnd ? vacationEnd : monthEnd;
+
+            if (overlapStart <= overlapEnd)
+            {
+                totalDays += (int)(overlapEnd - overlapStart).TotalDays + 1;
+            }
+        }
+
+        return totalDays;
     }
 }

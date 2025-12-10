@@ -37,7 +37,7 @@ var app = builder.Build();
 
 // TEMP
 var test = app.Services.GetRequiredService<NotionRawApiService>();
-var blub = await test.GetVacationsByMonthAsync(2025, 4);
+var blub = await test.GetVacationDaysInMonthAsync(2025, 11);
 //
 
 if (app.Environment.IsDevelopment())
