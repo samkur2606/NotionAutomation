@@ -28,7 +28,6 @@ builder.Services.AddTransient<NotionDatabaseService>();
 builder.Services.AddTransient<NotionPageService>();
 builder.Services.AddTransient<NotionRawApiService>();
 builder.Services.AddTransient<TimeSheetManager>();
-builder.Services.AddTransient<NotionRawParser>();
 builder.Services.AddHttpClient();
 builder.Services.AddCustomNotionClient();
 builder.AddCustomLoggingConfiguration(appSettings);

@@ -1,5 +1,9 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Notion.Client;
 using NotionAutomation.Api.Converters;
 using NotionAutomation.Api.Helpers;
 using NotionAutomation.Api.Models;
@@ -8,12 +12,12 @@ namespace NotionAutomation.Api.Services;
 
 public class NotionRawApiService
 {
-    public NotionRawApiService(HttpClient httpClient, AppSettings settings, ConfigurationHelper configurationHelper, NotionRawParser notionRawParser)
+    public NotionRawApiService(HttpClient httpClient, AppSettings settings, ConfigurationHelper configurationHelper, NotionMapper notionMapper)
     {
         HttpClient = httpClient;
         AppSettings = settings;
         ConfigurationHelper = configurationHelper;
-        NotionRawParser = notionRawParser;
+        NotionMapper = notionMapper;
         HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AppSettings.Notion.IntegrationToken);
         HttpClient.DefaultRequestHeaders.Add("Notion-Version", AppSettings.Notion.ApiVersion);
     }
@@ -21,7 +25,7 @@ public class NotionRawApiService
     private HttpClient HttpClient { get; }
     private AppSettings AppSettings { get; }
     private ConfigurationHelper ConfigurationHelper { get; }
-    private NotionRawParser NotionRawParser { get; }
+    private NotionMapper NotionMapper { get; }
 
     public async Task<string> GetDatabaseAsync(string notionDatabaseId)
     {
@@ -59,8 +63,8 @@ public class NotionRawApiService
 
         var response = await HttpClient.PostAsync(url, new StringContent(jsonBody, Encoding.UTF8, "application/json"));
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        var vacations = NotionRawParser.ParseVacations(content);
+        var pages = await ConvertToPages(response);
+        var vacations = pages.Select(i => NotionMapper.MapToVacation(i)).ToList();
         return vacations;
     }
 
@@ -98,10 +102,24 @@ public class NotionRawApiService
         var response = await HttpClient.PostAsync(url, new StringContent(jsonBody, Encoding.UTF8, "application/json"));
         response.EnsureSuccessStatusCode();
 
-        var content = await response.Content.ReadAsStringAsync();
-        var vacations = NotionRawParser.ParseVacations(content);
+        var pages = await ConvertToPages(response);
+        var vacations = pages.Select(i => NotionMapper.MapToVacation(i)).ToList();
 
         return vacations;
+    }
+
+    private async Task<List<Page>> ConvertToPages(HttpResponseMessage response)
+    {
+        var content = await response.Content.ReadAsStringAsync();
+        var jObject = JObject.Parse(content);
+        var results = jObject["results"]?.Children();
+        if (results is null) return Enumerable.Empty<Page>().ToList();
+        var pages = new List<Page>();
+        foreach (var result in results) {
+            var page = NotionMapper.ToSafePage(result, "place");
+            pages.Add(page);
+        }
+        return pages;
     }
 
     public async Task<int> GetVacationDaysInMonthAsync(int year, int month)
